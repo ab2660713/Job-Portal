@@ -55,6 +55,13 @@ export const registerUser = async (req, res) => {
 /* ================= LOGIN ================= */
 export const loginUser = async (req, res) => {
   try {
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({
+        success: false,
+        message: "JWT_SECRET is not configured on the server",
+      });
+    }
+
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
