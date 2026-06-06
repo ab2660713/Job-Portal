@@ -1,0 +1,31 @@
+{
+  "name": "jobportal",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run build --prefix project",
+    "start": "npm run build --prefix project && node server/server.js",
+    "serve": "node server/server.js",
+    "dev": "npm run build --prefix project && nodemon server/server.js",
+    "api:dev": "nodemon server/server.js",
+    "client:dev": "npm run dev --prefix project"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.5",
+    "multer": "^2.0.2",
+    "react-toastify": "^11.0.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  },
+  "keywords": [],
+  "description": ""
+}
