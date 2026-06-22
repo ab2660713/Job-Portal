@@ -1,7 +1,9 @@
 import dns from "dns";
-if (!process.env.VERCEL) {
-  dns.setServers(["8.8.8.8", "8.8.4.4"]);
-}
+try {
+  if (!process.env.VERCEL) {
+    dns.setServers(["8.8.8.8", "8.8.4.4"]);
+  }
+} catch (e) {}
 
 import express from "express";
 import dotenv from "dotenv";

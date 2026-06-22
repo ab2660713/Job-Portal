@@ -26,7 +26,6 @@ const Resume = () => {
 
     const formData = new FormData();
     formData.append("resume", file);
-    console.log(user);
     dispatch(uploadResume(formData));
   };
 

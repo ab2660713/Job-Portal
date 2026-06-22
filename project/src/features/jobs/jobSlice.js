@@ -29,10 +29,7 @@
     "jobs/my",
     async (_, thunkAPI) => {
       const state = thunkAPI.getState();
-      console.log("AUTH STATE:", state.auth);  // 👈 add this
-  
       const token = state.auth?.user?.token;
-      console.log("TOKEN:", token);  // 👈 add this
   
       return await jobService.getMyJobs(token);
     }
