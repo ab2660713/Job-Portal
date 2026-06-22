@@ -12,6 +12,7 @@ import EmployerDashboard from './pages/dashboard/EmployerDashboard';
 import Admin from './pages/Admin';
 import './App.css';
 import { ToastContainer } from 'react-toastify';
+import AIAssistant from './components/AIAssistant';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             </Routes>
           </main>
           <Footer />
+          <AIAssistant />
         </div>
         <ToastContainer/>
       </Router>

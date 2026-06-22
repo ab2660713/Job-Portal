@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   FaMapMarkerAlt,
@@ -8,9 +8,11 @@ import {
   FaDollarSign,
   FaArrowLeft,
   FaBuilding,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import { getJobById } from "../features/jobs/jobSlice";
-import { applyForJob, getMyApplications } from "../features/applications/applicationSlice";
+import { applyForJob, getMyApplications, resetApplicationState } from "../features/applications/applicationSlice";
+import { getMyProfile } from "../features/profile/profileSlice";
 import Modal from "../components/Modal";
 import "./JobDetails.css";
 
@@ -21,68 +23,88 @@ const JobDetails = () => {
 
   const { job, isLoading } = useSelector((state) => state.jobs);
   const { user } = useSelector((state) => state.auth);
+  const { profile } = useSelector((state) => state.profile);
 
   const [showApplyModal, setShowApplyModal] = useState(false);
-  const { applications,isError,message} = useSelector((state) => state.applications);
+  const [showIncompleteModal, setShowIncompleteModal] = useState(false);
+  const { applications, isError, message } = useSelector((state) => state.applications);
 
   const [applicationData, setApplicationData] = useState({
     coverLetter: "",
     expectedSalary: "",
     availableFrom: "",
   });
+
   const alreadyApplied = applications.some(
     (app) => app.jobId === id || app.job?._id === id || app.job === id
   );
-  
-  /* ================= FETCH JOB ================= */
+
   useEffect(() => {
     dispatch(getJobById(id));
     if (user?.role === "jobseeker") {
       dispatch(getMyApplications());
+      dispatch(getMyProfile());
     }
-    if (isError) {
-      alert(message);
-    }
-  }, [dispatch, id, isError, message, user?.role]);
+  }, [dispatch, id, user?.role]);
+
+  const getProfileMissingFields = () => {
+    if (!profile) return [];
+    const missing = [];
+    if (!profile.title) missing.push("Professional Title");
+    if (!profile.experience) missing.push("Experience");
+    if (!profile.skills || profile.skills.length === 0) missing.push("Skills");
+    if (!profile.resume || !profile.resume.data) missing.push("Resume");
+    if (!profile.phone) missing.push("Phone Number");
+    if (!profile.location) missing.push("Location");
+    return missing;
+  };
+
+  const isProfileComplete = () => {
+    const missing = getProfileMissingFields();
+    return missing.length === 0;
+  };
 
   if (isLoading || !job) {
     return <p className="loading">Loading job details...</p>;
   }
 
-  /* ================= APPLY ================= */
   const handleApply = () => {
     if (!user) {
       navigate("/login");
       return;
     }
+
+    if (!isProfileComplete()) {
+      setShowIncompleteModal(true);
+      return;
+    }
+
     setShowApplyModal(true);
   };
 
   const handleSubmitApplication = (e) => {
     e.preventDefault();
-  
+
     dispatch(
       applyForJob({
         jobId: id,
         data: applicationData,
       })
-    ).then(() => {
-      dispatch(getMyApplications()); // refresh
+    ).then((result) => {
+      if (result.meta.requestStatus === "fulfilled") {
+        dispatch(getMyApplications());
+        setShowApplyModal(false);
+      }
     });
-  
-    setShowApplyModal(false);
   };
-  
+
+  const missingFields = getProfileMissingFields();
 
   return (
     <div className="job-details-page">
-      {/* HEADER */}
       <div className="job-details-header">
         <div className="container">
-          <button
-            className="back-button"
-            onClick={() => navigate("/jobs")}
-          >
+          <button className="back-button" onClick={() => navigate("/jobs")}>
             <FaArrowLeft /> Back to Jobs
           </button>
         </div>
@@ -126,17 +148,51 @@ const JobDetails = () => {
             </div>
           </main>
 
-          {/* SIDEBAR */}
           <aside className="job-details-sidebar">
             <div className="action-card">
-            <button
-  onClick={handleApply}
-  disabled={alreadyApplied}
-  className={alreadyApplied ? "applied-btn" : "apply-btn"}
->
-  {alreadyApplied ? "Applied" : "Apply Now"}
-</button>
+              {!user && (
+                <button onClick={() => navigate("/login")} className="apply-btn">
+                  Login to Apply
+                </button>
+              )}
 
+              {user?.role === "jobseeker" && (
+                <>
+                  {missingFields.length > 0 && !alreadyApplied && (
+                    <div className="profile-warning">
+                      <FaExclamationTriangle className="warning-icon" />
+                      <p>Complete your profile to apply</p>
+                      <ul className="missing-fields-list">
+                        {missingFields.map((field, i) => (
+                          <li key={i}>{field}</li>
+                        ))}
+                      </ul>
+                      <Link to="/dashboard/jobseeker" className="complete-profile-link">
+                        Complete Profile
+                      </Link>
+                    </div>
+                  )}
+                  <button
+                    onClick={handleApply}
+                    disabled={alreadyApplied}
+                    className={alreadyApplied ? "applied-btn" : "apply-btn"}
+                  >
+                    {alreadyApplied ? "Applied" : "Apply Now"}
+                  </button>
+                </>
+              )}
+
+              {user?.role === "employer" && (
+                <div className="employer-notice">
+                  <p>You are viewing this job as an employer. Only job seekers can apply.</p>
+                </div>
+              )}
+
+              {user?.role === "admin" && (
+                <div className="employer-notice">
+                  <p>Admin view - applications are for job seekers only.</p>
+                </div>
+              )}
             </div>
 
             <div className="job-overview-card">
@@ -150,15 +206,74 @@ const JobDetails = () => {
         </div>
       </div>
 
-      {/* APPLY MODAL */}
+      {/* Incomplete Profile Modal */}
+      <Modal
+        isOpen={showIncompleteModal}
+        onClose={() => setShowIncompleteModal(false)}
+        title="Profile Incomplete"
+      >
+        <div className="incomplete-profile-modal">
+          <div className="incomplete-icon">
+            <FaExclamationTriangle />
+          </div>
+          <h3>Complete your profile before applying</h3>
+          <p>To apply for jobs, you need to fill in the following:</p>
+          <ul className="missing-list">
+            {missingFields.map((field, i) => (
+              <li key={i}>
+                <span className="missing-dot"></span>
+                {field}
+              </li>
+            ))}
+          </ul>
+          <div className="incomplete-actions">
+            <Link
+              to="/dashboard/jobseeker"
+              className="go-profile-btn"
+              onClick={() => setShowIncompleteModal(false)}
+            >
+              Go to Profile
+            </Link>
+            {missingFields.includes("Resume") && (
+              <Link
+                to="/dashboard/jobseeker/resume"
+                className="go-resume-btn"
+                onClick={() => setShowIncompleteModal(false)}
+              >
+                Upload Resume
+              </Link>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      {/* Apply Modal */}
       <Modal
         isOpen={showApplyModal}
         onClose={() => setShowApplyModal(false)}
         title="Apply for this position"
       >
         <form onSubmit={handleSubmitApplication} className="apply-form">
+          {isError && (
+            <div className="apply-error-msg">
+              {message}
+            </div>
+          )}
+
+          <div className="applicant-preview">
+            <h4>Your Profile (shared with employer)</h4>
+            <div className="preview-grid">
+              <span><strong>Name:</strong> {profile?.name}</span>
+              <span><strong>Title:</strong> {profile?.title}</span>
+              <span><strong>Experience:</strong> {profile?.experience}</span>
+              <span><strong>Location:</strong> {profile?.location}</span>
+              <span><strong>Skills:</strong> {profile?.skills?.join(", ")}</span>
+              <span><strong>Resume:</strong> {profile?.resume?.originalName || "Uploaded"}</span>
+            </div>
+          </div>
+
           <div className="form-group">
-            <label>Cover Letter</label>
+            <label>Cover Letter *</label>
             <textarea
               value={applicationData.coverLetter}
               onChange={(e) =>
@@ -167,12 +282,14 @@ const JobDetails = () => {
                   coverLetter: e.target.value,
                 })
               }
+              placeholder="Tell the employer why you're a great fit for this role..."
+              rows={5}
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Expected Salary</label>
+            <label>Expected Salary *</label>
             <input
               type="text"
               value={applicationData.expectedSalary}
@@ -182,12 +299,13 @@ const JobDetails = () => {
                   expectedSalary: e.target.value,
                 })
               }
+              placeholder="e.g. 5-8 LPA or $60,000"
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Available From</label>
+            <label>Available From *</label>
             <input
               type="date"
               value={applicationData.availableFrom}

@@ -26,8 +26,6 @@ const JobCard = ({ job }) => {
     e.preventDefault();
     dispatch(toggleSaveJob(job._id));
   };
-  console.log("JOB ID:", job._id);
-
   return (
     <div className="job-card">
       <div className="job-card-header">

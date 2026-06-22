@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { FaUser, FaBriefcase, FaBookmark, FaFileAlt, FaBuilding, FaPlusCircle, FaChartBar } from 'react-icons/fa';
+import { FaUser, FaBriefcase, FaBookmark, FaFileAlt, FaBuilding, FaPlusCircle, FaChartBar, FaBell } from 'react-icons/fa';
 import './DashboardSidebar.css';
 
 const DashboardSidebar = ({ role }) => {
@@ -7,13 +7,15 @@ const DashboardSidebar = ({ role }) => {
     { path: '/dashboard/jobseeker', icon: <FaUser />, label: 'Profile' },
     { path: '/dashboard/jobseeker/applied', icon: <FaBriefcase />, label: 'Applied Jobs' },
     { path: '/dashboard/jobseeker/saved', icon: <FaBookmark />, label: 'Saved Jobs' },
-    { path: '/dashboard/jobseeker/resume', icon: <FaFileAlt />, label: 'Resume' }
+    { path: '/dashboard/jobseeker/resume', icon: <FaFileAlt />, label: 'Resume' },
+    { path: '/dashboard/jobseeker/notifications', icon: <FaBell />, label: 'Notifications' }
   ];
 
   const employerLinks = [
     { path: '/dashboard/employer', icon: <FaBuilding />, label: 'Company Profile' },
     { path: '/dashboard/employer/post-job', icon: <FaPlusCircle />, label: 'Post New Job' },
     { path: '/dashboard/employer/manage-jobs', icon: <FaBriefcase />, label: 'Manage Jobs' },
+    { path: '/dashboard/employer/notifications', icon: <FaBell />, label: 'Notifications' }
   ];
 
   const links = role === 'jobseeker' ? jobSeekerLinks : employerLinks;

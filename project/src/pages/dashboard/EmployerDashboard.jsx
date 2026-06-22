@@ -4,6 +4,7 @@ import EmployerProfile from './EmployerProfile';
 import PostJob from './PostJob';
 import ManageJobs from './ManageJobs';
 import Applicants from './Applicants';
+import Notifications from './Notifications';
 import './Dashboard.css';
 
 const EmployerDashboard = () => {
@@ -17,6 +18,7 @@ const EmployerDashboard = () => {
             <Route path="/post-job" element={<PostJob />} />
             <Route path="/manage-jobs" element={<ManageJobs />} />
             <Route path="applicants/:jobId" element={<Applicants />} />
+            <Route path="/notifications" element={<Notifications />} />
           </Routes>
         </div>
       </div>

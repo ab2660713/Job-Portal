@@ -4,6 +4,7 @@ import { FaBriefcase, FaUser, FaBars, FaTimes } from 'react-icons/fa';
 import './Navbar.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { logoutUser } from '../features/auth/authSlice';
+import NotificationBell from './NotificationBell';
 const Navbar = () => {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
@@ -92,6 +93,10 @@ const dispatch=useDispatch()
                   </Link>
                 </li>
               )}
+
+              <li className="nav-item nav-notification">
+                <NotificationBell />
+              </li>
 
               <li className="nav-item nav-user">
   <Link

@@ -1,3 +1,8 @@
+import dns from "dns";
+if (!process.env.VERCEL) {
+  dns.setServers(["8.8.8.8", "8.8.4.4"]);
+}
+
 import express from "express";
 import dotenv from "dotenv";
 import path from "path";
@@ -12,6 +17,7 @@ import savedJobRoutes from "./routes/savedJobRoutes.js";
 import resumeRoutes from "./routes/resumeRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -63,6 +69,7 @@ app.use("/api/resume", resumeRoutes);
 app.use("/api/saved-jobs", savedJobRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use(express.static(clientDistPath));
 app.use((req, res, next) => {

@@ -10,13 +10,16 @@ export const getMyProfile = async (req, res) => {
 
     const profileComplete = Math.min(
       100,
-      [
-        user.phone,
-        user.location,
-        user.title,
-        user.experience,
-        user.skills.length > 0,
-      ].filter(Boolean).length * 20
+      Math.round(
+        [
+          user.phone,
+          user.location,
+          user.title,
+          user.experience,
+          user.skills && user.skills.length > 0,
+          user.resume && user.resume.data,
+        ].filter(Boolean).length / 6 * 100
+      )
     );
 
     res.json({
